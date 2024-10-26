@@ -18,7 +18,7 @@ interface UserRequest extends Request {
 const app: Express = express();
 const port: number = 8000;
 
-const dataFile = '../data/users.json';
+const dataFile = './data/users.json';
 
 let users: User[];
 
@@ -47,6 +47,33 @@ app.get('/read/usernames', (req: UserRequest, res: Response) => {
     return { id: user.id, username: user.username };
   });
   res.send(usernames);
+});
+
+
+app.get('/read/username/:name', addMsgToRequest, (req: UserRequest, res: Response) => {
+  const { name } = req.params;
+  const user = req.users?.find((user) => user.username === name);
+  if (user) {
+    res.json({ email: user.email });
+  } else {
+    res.status(404).json({
+      error: { message: 'User not found', status: 404 }
+    });
+  }
+});
+
+app.get('/home/:name', (req: UserRequest, res: Response) => {
+  const name = req.params.name;
+  const userWithName = users.filter((user) => 
+    user.username === name
+  );
+  
+  if (userWithName.length == 0) {
+    res.status(404).send({ message: 'User not found' });
+    
+  } else {
+    res.send(userWithName);
+  }
 });
 
 app.use(express.json());
